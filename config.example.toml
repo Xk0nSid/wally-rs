@@ -1,0 +1,6 @@
+delay = 900
+api_base_url = "https://api.unsplash.com"
+client_id = "<enter_your_unsplas_client_id_here>"
+quality = "raw|full|regular|medium"
+mode = "random|search"
+query = "search query"
