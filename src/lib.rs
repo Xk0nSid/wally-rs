@@ -133,7 +133,10 @@ impl<'a> Wally<'a> {
         let client_id: String = self.settings.get("client_id").unwrap();
         let url = format!(
             "{}/search/photos?client_id={}&query={}&page={}",
-            base_url, client_id, query, page
+            base_url,
+            client_id,
+            urlencoding::encode(query),
+            page
         );
         let body = reqwest::get(&url).unwrap().text().unwrap();
         let response = json::parse(&body).unwrap();

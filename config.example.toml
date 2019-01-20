@@ -1,6 +1,7 @@
-delay = 900
+tmp_filename = "/tmp/rw.png"
+delay = 300
 api_base_url = "https://api.unsplash.com"
-client_id = "<enter_your_unsplas_client_id_here>"
-quality = "raw|full|regular|medium"
-mode = "random|search"
-query = "search query"
+client_id = "<your_unsplash_client_id>"
+quality = "raw|full|regular"
+mode = "search|random"
+query = "nature"

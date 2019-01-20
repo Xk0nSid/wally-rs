@@ -9,11 +9,19 @@ the wally server.
 
 ### Requirements
 
-* Rust `>= v1.31.0 (need edition=2018)`
+* Rust `>= v1.31.0 (need edition=2018) only needed if building from source`
+* [Unsplash Developer API](https://unsplash.com/developers)
 * feh
 
 ### Installation
 
+#### From prebuild binary
+Get latest release of binary from [here](https://github.com/xk0nsid/wally-rs/releases).
+Move the binary to your `$PATH`.
+
+Use the provided `config.example.toml` for base configuration.
+
+#### From source
 ```sh
 $ git clone https://github.com/xk0nsid/wally-rs.git
 $ cd wally-rs
@@ -24,6 +32,6 @@ $ cargo build --release
 
 * [x] Add search/query support to be able to fetch query based results
 * [x] Add pagination support to fully use the search results
-* [ ] Make temporary file path configurable via `config` file
-* [ ] Maintain state between server restarts by storing state data in `/cache`
+* [x] Make temporary file path configurable via `config` file
+* [ ] Maintain state between server restarts by storing state data in `/cache` or `/var`
 * [ ] Add pre-built binary releases to github
