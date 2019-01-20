@@ -7,21 +7,32 @@ use std::{thread, time};
 #[derive(Debug)]
 pub struct Wally<'a> {
     settings: &'a config::Config,
-    random_img_urls: Vec<String>,
+    search_img_urls: Vec<String>,
     next_page: u8,
-    quality: String,
+    quality: &'a str,
+    tmp_filename: &'a str,
 }
 
 impl<'a> Wally<'a> {
+    /// Create and return a new instance of Wally
     pub fn new(settings: &config::Config) -> Wally {
-        let quality: String = match settings.get("quality") {
-            Ok(q) => q,
-            Err(_) => String::from("full"),
+        // Get filename or set default filename
+        let tmp_filename: &str = match settings.get("tmp_filename") {
+            Ok(tf) => tf,
+            Err(_) => "/tmp/rw.png",
         };
 
+        // Default quality is full
+        let quality: &str = match settings.get("quality") {
+            Ok(q) => q,
+            Err(_) => "full",
+        };
+
+        // Create and return Wally object
         Wally {
             settings,
-            random_img_urls: vec![],
+            tmp_filename,
+            search_img_urls: vec![],
             next_page: 1,
             quality: quality,
         }
@@ -31,33 +42,33 @@ impl<'a> Wally<'a> {
     pub fn run(&mut self) {
         let mode: String = match self.settings.get("mode") {
             Ok(mode) => mode,
-            Err(_) => String::from("random")
+            Err(_) => String::from("random"),
         };
         let mut img_url: String;
 
-        let query: &str = match self.settings.get("query") {
+        let query: String = match self.settings.get("query") {
             Ok(q) => q,
-            Err(_) => {
+            Err(er) => {
                 if mode == "search" {
+                    eprintln!("Error: {:?}", er);
                     eprintln!("Invalid or not defined query. Query is required for `search` mode.");
                     exit(1);
                 } else {
-                    ""
+                    String::from("")
                 }
             }
         };
 
         loop {
-
             // Get link to download image
             match mode.as_ref() {
                 "search" => {
-                    img_url = match self.random_img_urls.pop() {
+                    img_url = match self.search_img_urls.pop() {
                         Some(url) => url,
                         None => {
-                            self.populate_search_results(query, self.next_page);
+                            self.populate_search_results(query.as_str(), self.next_page);
                             self.update_page_number();
-                            self.random_img_urls.pop().unwrap()
+                            self.search_img_urls.pop().unwrap()
                         }
                     }
                 }
@@ -113,20 +124,25 @@ impl<'a> Wally<'a> {
         let body = reqwest::get(&url).unwrap().text().unwrap();
 
         let response = json::parse(&body).unwrap();
-        format!("{}", response["urls"][self.quality.to_owned()])
+        format!("{}", response["urls"][self.quality])
     }
 
-    /// Populates vector `self.random_img_urls` with images from
-    /// search result
+    /// Populates vector `self.search_img_urls` with images from search result
     fn populate_search_results(&mut self, query: &str, page: u8) {
         let base_url: String = self.settings.get("api_base_url").unwrap();
         let client_id: String = self.settings.get("client_id").unwrap();
-        let url = format!("{}/search/photos?client_id={}&query={}&page={}", base_url, client_id, query, page);
+        let url = format!(
+            "{}/search/photos?client_id={}&query={}&page={}",
+            base_url, client_id, query, page
+        );
         let body = reqwest::get(&url).unwrap().text().unwrap();
         let response = json::parse(&body).unwrap();
 
         for res_ix in 0..10 {
-            self.random_img_urls.push(format!("{}", response["results"][res_ix]["urls"][self.quality.to_owned()]));
+            self.search_img_urls.push(format!(
+                "{}",
+                response["results"][res_ix]["urls"][self.quality]
+            ));
         }
     }
 
